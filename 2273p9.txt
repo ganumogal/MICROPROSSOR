@@ -1,0 +1,148 @@
+;Name-Walve Suraj Bharat
+;Roll no-2279
+;batch-s8
+
+section .data
+g_msg db 10,13,"GDTR:  "
+g_msglen equ $-g_msg
+l_msg db 10,13,"LDTR:  "
+l_msglen equ $-l_msg
+smsg db 10,13,"Selector: "
+smsglen equ $-smsg
+limitmsg db 10,13,"Limit: "
+limitmsglen equ $-limitmsg
+basemsg db 10,13,"Base Address: "
+basemsglen equ $-basemsg
+t_msg db 10,13,"Task Register"
+t_msglen equ $-t_msg
+i_msg db 10,13,"IDTR:  "
+i_msglen equ $-i_msg
+newline db 10,13
+section .bss
+gdtr_reg resb 10
+ldtr_reg resb 2
+tr_reg resb 2
+idtr_reg resb 10
+
+no resb 20
+;;;;;;;;;;;;Read, Write macro defined here
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+global _start
+;;;;;;;;;;;;;;;;;;;;;;;Program starts here
+section .text
+_start:
+    sgdt [gdtr_reg]
+    
+    sys_write g_msg,g_msglen
+    sys_write limitmsg,limitmsglen
+    mov bx, [gdtr_reg]
+    call disp_p2
+    sys_write basemsg,basemsglen
+    mov rbx,[gdtr_reg+2]
+    call disp_p8
+	sys_write l_msg,l_msglen
+	sys_write smsg,smsglen
+	sldt [ldtr_reg]
+	mov bx,[ldtr_reg]
+	call disp_p2
+	sys_write t_msg,t_msglen
+	sys_write smsg,smsglen
+	str [tr_reg]
+	mov bx, [tr_reg]
+	call disp_p2
+	sys_write i_msg,i_msglen
+    sys_write limitmsg,limitmsglen
+	sidt [idtr_reg]
+    mov bx, [idtr_reg]
+    call disp_p2
+    sys_write basemsg,basemsglen
+    mov rbx,[idtr_reg+2]
+    call disp_p8
+	sys_write newline,2
+    sys_exit
+
+;;;;;;;;;;;;;;;;;;;;;;;display procedure
+disp_p8:
+	mov cl,16
+	mov rsi,no
+u1:
+	rol rbx,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,17
+	ret
+;;;;;;;;;;;;;;;;;;;;;;accept procedure
+disp_p2:
+	mov cl,4
+	mov rsi,no
+u11:
+	rol bx,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c11
+	add al,7
+c11:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u11
+	sys_write no,4
+	ret
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+output---------------------------
+
+
+sl1@sl1-HP-285-Pro-G1-MT:~$ nasm -f elf64 expt9.asm
+sl1@sl1-HP-285-Pro-G1-MT:~$ ld -o expt9 expt9.o  
+sl1@sl1-HP-285-Pro-G1-MT:~$ ./expt9
+
+GDTR: 
+Limit: 007F
+Base Address: FFFFFE000003A000
+LDTR: 
+Selector: 0000
+Task Register
+Selector: 0040
+LDTR: 
+Limit: 0FFF
+Base Address: FFFFFE0000000000
+sl1@sl1-HP-285-Pro-G1-MT:~$ 
+
+
+
+
+
+
+

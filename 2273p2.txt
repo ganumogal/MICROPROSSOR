@@ -1,0 +1,139 @@
+;Name-Walve Suraj Bharat
+;Roll no-2279
+;batch-s8
+
+section .data
+
+msg1 db 10,13,"The largest number is : "
+msg1len equ $ - msg1
+msg2 db 10,13,"Enter the numbers : "
+msg2len equ $ - msg2
+numcount db 5
+newline db 10,13
+section .bss
+noArray resw 5
+no resb 20
+;;;;;;;;;;;;Read, Write macro defined here
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+global _start
+;;;;;;;;;;;;;;;;;;;;;;;Program starts here
+section .text
+_start:
+    call accept_no
+	sys_write msg1,msg1len
+	mov cl,[numcount]
+	mov bx,0
+    mov r8,noArray
+up1:
+	mov ax,[r8]
+    cmp ax,bx
+    jle next1
+    mov bx,ax
+next1:
+    inc r8
+    inc r8
+    dec cl
+    jnz up1
+
+    call disp_p
+	sys_write newline,2
+    sys_exit
+;;;;;;;;;;;;;;;;;;;;;;;Accept the numbbers from user
+accept_no:
+    mov rcx,5
+    mov r9,noArray
+upp:
+    push rcx
+    sys_write msg2,msg2len
+    call accept_p
+    mov [r9],bx
+    add r9,2
+    pop rcx
+    dec cl
+    jnz upp
+    ret
+;;;;;;;;;;;;;;;;;;;;;;;display procedure
+disp_p:
+	mov cl,4
+	mov rsi,no
+u1:
+	rol bx,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+
+        add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,4
+	ret
+;;;;;;;;;;;;;;;;;;;;;;accept procedure
+accept_p:
+	
+	sys_read no,4
+	mov cl,al
+	dec cl
+	mov rbx,0
+	mov rsi,no
+u2:	
+	mov al,[rsi]
+	shl rbx,04
+	cmp al,'9'
+	jle c2
+	sub al,7
+c2:
+	sub al,0x30
+	add bl,al
+	inc rsi
+	dec cl
+	jnz u2	
+	ret
+
+
+;;;;;;;;;;;;;;;;;
+
+
+output-----
+
+suraj123@ubuntu:~$ nasm -f elf642273p2.asm
+suraj123@ubuntu:~$ ld 2273p2.o
+suraj123@ubuntu:~$ ./a.out
+
+Enter the numbers : 123
+
+Enter the numbers : 1   
+
+Enter the numbers : 124
+
+Enter the numbers : 20
+
+Enter the numbers : 1A
+
+The largest number is : 0124
+suraj123@ubuntu:~$ ^C
+suraj123@ubuntu:~$ 

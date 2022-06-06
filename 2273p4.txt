@@ -1,0 +1,208 @@
+;Name-Walve Suraj Bharat
+;Roll no-2279
+;batch-s8
+
+
+section .data
+menu db 10,13,"1: Additon",10,13,"2: Substraction"
+menu1 db 10,13,"3: Multiplicaton",10,13,"4: Division"
+      db 10,13,"5: Exit",10,13,"Enter your choice: "
+menulen equ $ - menu    
+dstatement db 10,13,"Enter correct choice....."
+dslen equ $ - dstatement
+num1 db 30
+num2 db 10
+a1 db 10,13,"Additon here",10
+a1len equ $ - a1
+a2 db 10,13,"Substraction here"
+a2len  equ $ - a2 
+qtdisplay db "Quotient is "
+qtlen equ $-qtdisplay
+switch dq case1, case2, case3,case4,case5
+dvdnd dw 15
+dvsr db 5
+multiplicand db 2
+multiplier db 5
+section .bss
+choice resb 2
+qt resb 1
+rmndr resb 1
+no resb 16
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;Read, Write macro defined here
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+global _start
+section .text
+
+_start:
+    sys_write menu,menulen
+    sys_read choice,2
+    mov rax,0
+    mov al,[choice]
+    sub al,30h
+    cmp al,1
+    jl dfault
+    cmp al,5
+    jg dfault
+    
+    dec al
+    mov rsi,rax
+    jmp [switch+rsi*8]
+
+case1:
+
+    sys_write a1,a1len
+    mov al,[num1]
+    add al,[num2]
+    mov bl,al
+    call disp_p
+    jmp _start
+    
+case2: 
+
+    sys_write a2,a2len
+    mov al,[num1]
+    sub al,[num2]
+    mov bl,al
+    
+    call disp_p
+    jmp _start
+
+    
+    
+case3:
+ 
+    mov ax,[multiplicand]
+    mov bl,[multiplier]
+    mul bl
+    mov bx,ax
+    call disp_p16
+    jmp _start
+    
+case4: 
+
+    sys_write qtdisplay,qtlen
+    mov ax,[dvdnd]
+    mov bl,[dvsr]
+    div bl
+    mov [qt],al
+    mov [rmndr],ah
+    sys_write qtdisplay,qtlen
+    mov bl, [qt]
+    call disp_p
+    jmp _start
+    
+case5:
+ 
+    sys_exit
+    
+dfault:
+
+    sys_write dstatement,dslen
+    jmp _start
+    sys_exit 
+
+disp_p:
+	mov cl,2
+	mov rsi,no
+u1:
+	rol bl,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,2
+	ret
+;;;;;;;;;;;;;;;;;
+disp_p16:
+	mov cl,4
+	mov rsi,no
+u11:
+	rol bx,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c11
+	add al,7
+c11:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u11
+	sys_write no,4
+	ret
+;;;;;;;;;;;;;;;;
+
+output--------------------
+    
+suraj123@ubuntu:~$ nasm -f elf64 2273p4.asm
+suraj123@ubuntu:~$ ld x.o
+suraj123@ubuntu:~$ ./a.out
+
+1: Additon
+2: Substraction
+3: Multiplicaton
+4: Division
+5: Exit
+Enter your choice: 1
+
+Additon here
+1E
+1: Additon
+2: Substraction
+3: Multiplicaton
+4: Division
+5: Exit
+Enter your choice: 2
+
+Substraction here0A
+1: Additon
+2: Substraction
+3: Multiplicaton
+4: Division
+5: Exit
+Enter your choice: 3
+000F
+1: Additon
+2: Substraction
+3: Multiplicaton
+4: Division
+5: Exit
+Enter your choice: 4
+Quotient is Quotient is 04
+1: Additon
+2: Substraction
+3: Multiplicaton
+4: Division
+5: Exit
+Enter your choice: 5
+suraj123@ubuntu:~$ 
+

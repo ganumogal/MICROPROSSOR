@@ -1,0 +1,177 @@
+;Name-Walve Suraj Bharat
+;Roll no-2279
+;batch-s8
+
+section .data
+msg1 db 10,13,"Enter four digit hex number: "
+msg1len equ $-msg1
+menu db 10,13,"1. Hex to BCD"
+     db 10,13,"2. BCD to Hex"
+     db 10,13,"3. Exit"
+     db 10,13,"Enter your choice: "
+menulen equ $-menu 
+msg2 db 10,13,"Enter five digit bcd number: "
+msg2len equ $-msg2    
+msg3 db 10,13,"Error..."
+msg3len equ $ - msg3
+section .bss
+hex resw 1
+bcd resb 6
+no resb 16
+choice resb 1
+
+;;;;;;;;;;;;Read, Write macro defined here
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+global _start
+;;;;;;;;;;;;;;;;;;;;;;;Program starts here
+section .text
+_start:
+    sys_write menu ,menulen
+    sys_read choice,2
+    mov al,[choice]
+    cmp al,0x31
+    jne ch2
+    call h2b
+    sys_exit
+ ch2: cmp al,0x32
+    jne ch3
+    call b2h
+ ch3:   
+    sys_exit   
+
+;;bcd to hex procedure
+b2h:
+    sys_write msg2,msg2len
+    sys_read bcd,5
+    cmp al,5
+    je contb2h
+    sys_write msg3,msg3len
+    sys_exit
+contb2h:
+    mov ax,0
+    mov bx,10
+    mov rsi,bcd
+    mov cl,5
+ub2h1:
+    mov dx,0
+    mul bx
+    mov dx,0
+    mov dl,[rsi]
+    sub dl,0x30
+    add ax,dx
+    inc rsi
+    dec cl
+    jnz ub2h1
+    mov bx,ax
+    call disp_4
+    ret
+;;hex to bcd procedure
+h2b:
+    sys_write msg1, msg1len
+    call accept_4
+    mov [hex],bx
+    mov ax,[hex]
+    mov dx,0
+    mov bx,10
+    mov rsi,bcd
+    add rsi,4
+    mov cl,5
+up123:
+    div bx
+    add dl,30h
+    mov [rsi],dl
+    mov dx,0
+    dec rsi
+    dec cl
+    jnz up123
+    sys_write bcd,5
+    sys_exit
+    ret
+
+
+;;;;;;;;;;;;;;;;;;;;;;;display procedure
+disp_4:
+	mov cl,4
+	mov rsi,no
+u1:
+	rol bx,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,4
+	ret
+;;;;;;;;;;;;;;;;;;;;;;accept procedure
+accept_4:
+	
+	sys_read no,5
+	mov cl,al
+	dec cl
+	mov bx,0
+	mov rsi,no
+u2:	
+	mov al,[rsi]
+	shl bx,04
+	cmp al,'9'
+	jle c2
+	sub al,7
+c2:
+	sub al,0x30
+	add bl,al
+	inc rsi
+	dec cl
+	jnz u2	
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+output-----
+
+
+suraj123@ubuntu:~$ nasm -f elf64 2273p6.asm
+suraj123@ubuntu:~$ ld 2273p6.o
+suraj123@ubuntu:~$ ./a.out
+
+1. Hex to BCD
+2. BCD to Hex
+3. Exit
+Enter your choice: 1
+
+Enter four digit hex number: AAAA
+43690suraj123@ubuntu:~$ ./a.out
+
+1. Hex to BCD
+2. BCD to Hex
+3. Exit
+Enter your choice: 2
+
+Enter five digit bcd number: 12345
+3079suraj123@ubuntu:~$ 
+suraj123@ubuntu:~$ 
