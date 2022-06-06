@@ -1,0 +1,117 @@
+;mogal ganesh balasaheb
+;Roll no-2273
+;batch-s8
+
+section .data
+
+ms1 db "Data of first block1",10
+ms1len equ $ -ms1
+block1 db 'A','b','C','d','E','f','G','g','F','J'
+len1 equ $ - block1
+
+ms2 db "Data of first block2",10
+ms2len equ $ -ms2
+block2 db '0','0','0','0','0','0','0','0','0','0'
+len2 equ $ -block2
+
+ms3 db "After overlapping the data of block2",10
+ms3len equ $ -ms3
+
+
+
+section .bss
+
+no resb 16
+
+
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+
+
+global _start
+
+section .text
+
+_start:
+
+       sys_write ms1,ms1len
+       sys_write block1,len1
+       sys_write ms2,ms2len
+       sys_write block2,len2
+       sys_write ms3,ms3len
+       
+       mov r8,block1
+       mov r9,block2
+       mov cl,11
+up:       
+       mov al,[r8]
+       mov [r9],al
+       add r9,1
+       add r8,1
+       dec cl
+       jnz up
+       
+      sys_write block2,len2
+       
+       
+       sys_exit
+       
+
+;;;;;;display procedures start here 
+
+ 
+disp_p:
+	mov cl,2
+	mov rsi,no
+u1:
+	rol bl,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,2
+	ret
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+output---------------
+
+
+Ganesh123@ubuntu:~$ nasm -f elf64 over.asm
+Ganesh123@ubuntu:~$ ld over.o
+Ganesh123@ubuntu:~$ ./a.out
+Data of first block1
+AbCdEfGgFJ
+Data of first block2
+0000000000
+After overlapping the data of block2
+AbCdEfGgFJ
+Ganesh123@ubuntu:~$ 
+Ganesh123@ubuntu:~$ 

@@ -1,0 +1,161 @@
+;mogal ganesh balasaheb 
+;Roll n0-2273
+;batch-s8
+
+
+;;;;;;;;;;;;;;;Simulation of type command
+section .data
+fileopen equ 2
+fileclose equ 3
+filecreate equ 85
+O_RDONLY equ 0
+fd1 dq 0
+fd2 dq 0
+success db 10,13,"File copied successfully...."
+successlen equ $-success
+fnferr db 10,13,"File  not Found ..."
+fnferrlen equ $-fnferr
+errmsg db 10,13,"Enter file name"
+errmsglen equ $ - errmsg
+msg1 db "Enter number ",10
+msg1len equ $ - msg1
+msg2 db 10,13,"No is: "
+msg2len equ $ - msg2
+lno db 0
+newline db 10,13
+tmpsize dq 0
+
+
+section .bss
+destfname resb 20
+dflen resq 1
+sflen resq 1
+sourcefname resb 20
+noArray resq 5
+no resb 20
+readbuffer resb 255
+
+;;;;;;;;;;;;Read, Write macro defined here
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+global _start
+;;;;;;;;;;;;;;;;;;;;;;;Program starts here
+section .text
+_start:
+
+    ;;;;;;;;read file name
+	pop	r8			; pop the number of arguments from the stack
+	pop	rsi			; discard the program name, since we only want the commandline arguments
+
+    dec r8
+    cmp r8, 1
+    je cont1
+    sys_write errmsg,errmsglen
+    sys_exit
+cont1:
+    pop rsi
+    mov r9,destfname
+    mov r10,dflen
+    call readfname
+    call filecopy
+    sys_write newline,2
+    sys_exit
+
+;copy file content from source to destination
+filecopy:
+;;;;;;;open file for reading
+    mov rax, 2
+    mov rdi, destfname
+    mov rsi, 0
+    ;mov rdx,777
+    syscall
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    cmp rax,0
+    jle error1
+    mov [fd1],rax
+    
+rpt:
+;;;;read file
+    mov rax, 0
+    mov rdi, [fd1]
+    mov rsi, readbuffer
+    mov rdx, 255
+    syscall
+;;;;;;;;;;;;;;
+    cmp rax, 0
+    jle endfile
+    mov [tmpsize],rax
+    sys_write readbuffer, qword [tmpsize]
+    jmp rpt
+endfile:
+;;;;close file
+    mov rax,3 
+    mov rdi,[fd1]
+    syscall
+;;;;;;;;
+    ret
+error1:
+    sys_write fnferr,fnferrlen
+    sys_exit
+    ret
+
+
+
+;read filename from commandline
+readfname:
+    
+    mov rdx,0
+    mov rbx,rsi
+strCountLoop:
+    mov al, [rbx]
+    mov [r9],al
+    cmp al, 0
+    je strCountDone
+    inc rdx
+    inc rbx
+    inc r9
+    jmp strCountLoop
+strCountDone:
+    mov [r10],rdx
+    cmp rdx, 0
+    je prtDone
+;
+; String printed, return to calling routine.
+prtDone:
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+output----------------
+
+
+
+Ganesh123@ubuntu:~$ nasm -f elf64 2273p10.asm
+Ganesh123@ubuntu:~$ ld 2273p10.o
+Ganesh123@ubuntu:~$ ./a.out Ganesh.txt
+In computer science, an optimal binary search tree (Optimal BST), sometimes called a weight-balanced binary tree,[1] is a binary search tree which provides the smallest possible search time (or expected search time) for a given sequence of accesses (or access probabilities). Optimal BSTs are generally divided into two types: static and dynamic.
+
+In the static optimality problem, the tree cannot be modified after it has been constructed. In this case, there exists some particular layout of the nodes of the tree which provides the smallest expected search time for the given access probabilities. Various algorithms exist to construct or approximate the statically optimal tree given the information on the access probabilities of the elements.
+
+In the dynamic optimality problem, the tree can be modified at any time, typically by permitting tree rotations. The tree is considered to have a cursor starting at the root which it can move or use to perform modifications. In this case, there exists some minimal-cost sequence of these operations which causes the cursor to visit every node in the target access sequence in order. The splay tree is conjectured to have a constant competitive ratio compared to the dynamically optimal tree in all cases, though this has not yet been proven.
+
+Ganesh123@ubuntu:~$ 

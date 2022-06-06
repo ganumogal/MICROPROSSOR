@@ -1,0 +1,99 @@
+;mogal ganesh balasaheb
+;Roll no-2273
+;batch-s8
+
+
+section .data
+
+ms1 db "Data of block before block transfer",10
+ms1len equ $ -ms1
+ms2 db "Data after block transfer",10
+ms2len equ $ -ms2
+ms db 20
+block db "Purushottams        "
+len1 equ $ - block
+
+section .bss
+
+no resb 16
+
+
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+
+
+global _start
+
+section .text
+
+_start:
+       sys_write ms1,ms1len
+       sys_write block,20
+       mov rsi,block+12
+       dec rsi
+       mov rdi,block+20
+       dec rdi
+       
+       mov rcx,12
+       std
+       rep movsb       
+       
+       sys_write ms2,ms2len
+       sys_write block,20
+       sys_exit
+       
+
+;;;;;;display procedures start here 
+	
+ 
+disp_p:
+	mov cl,2
+	mov rsi,no
+u1:
+	rol bl,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,2
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+output---------------------------------
+
+
+Ganesh123@ubuntu:~$ nasm -f elf64 2273p8.asm
+Ganesh123@ubuntu:~$ ld 2273p8.o
+Ganesh123@ubuntu:~$ ./a.out
+Data of block before block transfer
+Purushottams        Data after block transfer
+PurushotPurushottamsGanesh123@ubuntu:~$ ^C
+Ganesh123@ubuntu:~$ 

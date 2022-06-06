@@ -1,0 +1,111 @@
+;Mogal ganesh balasaheb
+;Rollno- 2273
+;batch-s8
+
+section .data
+
+numarray dw -317,-1,-138,-251,123
+arraycount db 5
+msg db "Number of negative number in array",10
+msglen equ $ - msg
+section .bss
+
+no resb 16
+result resb 1
+
+%macro sys_read 2
+	mov rax,0
+	mov rdi,0
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+
+%endmacro
+
+%macro sys_write 2
+	mov rax,1
+	mov rdi,1
+	mov rsi,%1
+	mov rdx,%2
+	syscall
+%endmacro
+
+%macro sys_exit 0
+	mov rax,60
+	mov rdi,0
+	syscall
+%endmacro
+
+
+global _start
+
+section .text
+
+_start:
+
+      mov bl,0
+      mov cl,[arraycount]
+      mov rsi,numarray
+ 
+label1:
+      mov ax,[rsi]
+      rol ax,1
+      and ax,1
+      jz label2
+      inc bl
+    
+
+label2:
+       inc rsi
+       inc rsi
+       dec cl
+       jnz label1
+     
+
+       mov [result],bl
+       mov bl,[result]
+       sys_write msg, msglen
+       call disp_p
+
+
+       sys_exit
+       
+
+
+
+
+
+
+
+;;;;;;display procedures start here 
+
+ 
+disp_p:
+	mov cl,2
+	mov rsi,no
+u1:
+	rol bl,0x04
+	mov al,bl
+	and al,0x0f
+	cmp al,9
+	jle c1
+	add al,7
+c1:
+	add al,0x30
+	mov [rsi],al
+	inc rsi
+	dec cl
+	jnz u1
+	sys_write no,2
+	ret
+;;;;;;;;;;;;;;;;;;;
+
+output-------------------------
+
+ganesh123@ubuntu:~$ nasm -f elf64 2273p5.asm
+ganesh123@ubuntu:~$ ld 2273p5.o
+ganesh123@ubuntu:~$ ./a.out
+Number of negative number in array
+04
+ganesh123@ubuntu:~$ 
+
